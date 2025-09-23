@@ -1,1 +1,3 @@
-# This file is for the ops developing in CUDA Learning
+|📖 CUDA Kernel| 📖 State|
+|:---|:---|
+|embedding|✔️

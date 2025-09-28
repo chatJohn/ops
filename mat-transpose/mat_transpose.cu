@@ -18,3 +18,17 @@ __global__ void mat_transpose_f32_row2col_kernel(float *x, float *y, const int r
         y[global_idx] = x[global_row * col + global_col];
     }
 }
+
+__global__ void mat_transpose_f32x4_col2row_kernel(float *x, float *y, const int row, const int col){
+    int global_idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int global_row = (global_idx * 4) / col;
+    int global_col = (global_idx * 4) % col;
+    if(global_row < row && global_col + 3 < col){
+        float4 x_val = reinterpret_cast<float4*>(x)[global_idx];
+        y[global_col * row + global_row] = x_val.x;
+        y[(global_col + 1) * row + global_row] = x_val.y;
+        y[(global_col + 2) * row + global_row] = x_val.z;
+        y[(global_col + 3) * row + global_row] = x_val.w;
+    }
+    
+}

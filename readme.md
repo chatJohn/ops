@@ -2,3 +2,4 @@
 |:---|:---|
 |embedding|✔️
 |mat_transpos| doing...
+|reduce| doing

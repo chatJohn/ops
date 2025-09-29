@@ -78,4 +78,39 @@ __global__ void reduce3(float *d_A, const int N){
     }
 }
 
+#define WRAP_SIZE 32
+template<int kWarpSize = WRAP_SIZE>
+__device__ __forceinline__ float wrapReduce(float val){
+    #pragma unroll
+    for(int mask = kWarpSize >> 1; mask >= 1; mask >>= 1){
+        val += __shfl_xor_sync(0xffffffff, val, mask);
+    }
+    return val;
+}
 
+__global__ void reduce4(float *d_A, const int N){
+    extern __shared__ float data[];
+    int tid = threadIdx.x;
+    int idx = 2 * blockIdx.x * blockDim.x + tid;
+    float sum = idx < N ? d_A[idx] : 0.f;
+    if(idx + blockDim.x < N){
+        data[tid] = sum + d_A[idx + blockDim.x];
+    }
+    __syncthreads();
+
+    for(int s = blockDim.x >> 1; s >= 32; s >>= 1){
+        if(tid < s){
+            data[tid] = sum = sum + data[tid + s];
+        } 
+        __syncthreads();
+    }
+
+    // warp reduction for last 32 threads
+    if(tid < 32){
+        sum = wrapReduce<WRAP_SIZE>(sum);
+    }
+
+    if(tid == 0){
+        d_A[blockIdx.x] = sum;
+    }
+}

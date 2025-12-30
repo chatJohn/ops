@@ -1,3 +1,5 @@
+> MAC Version 
+
 |📖 CUDA Kernel| 📖 State|
 |:---|:---|
 |embedding|✔️

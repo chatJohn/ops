@@ -12,6 +12,7 @@ __global__ void naive_gemm(float *A, float *B, float *C, const int M, const int 
 
 
 // one block for one tile of C
+// tile size is. Bm * Bn, block size does not match tile size, so rearrange the threads in the block to load data from global mem.
 template<int Bm = 128, int Bn = 128, int Bk = 8, int blockSize = 256, int A_BLOCK_X = 8, int B_BLOCK_X = 32, int C_BLOCK_X = 16>
 __global__ void block_tile_GEMM(float *A, float *B, float *C, const int M, const int N, const int K){
     __shared__ float As[Bm][Bk];
@@ -44,7 +45,7 @@ __global__ void block_tile_GEMM(float *A, float *B, float *C, const int M, const
     constexpr int Tm = Bm / C_BLOCK_Y;
     constexpr int Tn = Bn / C_BLOCK_X;
 
-    float Ct[Tm][TN] = {0.f};
+    float Ct[Tm][Tn] = {0.f};
 
     for(int k = 0; k < K; k += Bk){
         #pragma unroll
